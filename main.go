@@ -113,6 +113,16 @@ func (e *Emulator) LoadRom(filepath string) {
 	}
 }
 
+func (e *Emulator) Push(value uint16) {
+	e.Stack[e.StackPointer] = value
+	e.StackPointer += 1
+}
+
+func (e *Emulator) Pop() uint16 {
+	e.StackPointer -= 1
+	return e.Stack[e.StackPointer]
+}
+
 func (e *Emulator) Fetch() uint16 {
 	first_code := e.Ram[e.ProgramCounter]
 	second_code := e.Ram[e.ProgramCounter+1]
@@ -140,9 +150,7 @@ func (e *Emulator) Decode(opcode uint16) {
 			break
 
 		case 0x00EE:
-			stackAddress := e.Stack[e.StackPointer]
-			e.ProgramCounter = stackAddress
-			e.StackPointer -= 1
+			e.ProgramCounter = e.Pop()
 
 			fmt.Printf("Opcode %x: Set the ProgramCounter to stack address\n", opcode)
 			break
@@ -153,6 +161,16 @@ func (e *Emulator) Decode(opcode uint16) {
 		e.ProgramCounter = nnn
 
 		fmt.Printf("Opcode %x: Set ProgramCounter to %d\n", opcode, nnn)
+		break
+
+	case 0x2000:
+		oldValue := e.ProgramCounter
+		e.Push(oldValue)
+
+		nnn := opcode & 0x0FFF
+		e.ProgramCounter = nnn
+
+		fmt.Printf("Opcode %x: Set ProgramCounter to %d and add %d to the stack \n", opcode, nnn, oldValue)
 		break
 
 	case 0x6000:

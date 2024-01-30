@@ -29,11 +29,11 @@ func TestDecoder(t *testing.T) {
 		emu.ProgramCounter = uint16(0x0001)
 		emu.Stack[0] = uint16(0x0010)
 		emu.Stack[1] = uint16(0x0020)
-		emu.StackPointer = uint16(1)
+		emu.StackPointer = uint16(2)
 		emu.Decode(0x00EE)
 
 		assert.Equal(t, uint16(0x0020), emu.ProgramCounter)
-		assert.Equal(t, uint16(0), emu.StackPointer)
+		assert.Equal(t, uint16(1), emu.StackPointer)
 	})
 
 	t.Run("1nnn: Sets the program counter to nnn", func(t *testing.T) {
@@ -43,6 +43,16 @@ func TestDecoder(t *testing.T) {
 		got := emu.ProgramCounter
 		want := uint16(0x228)
 		assert.Equal(t, want, got)
+	})
+
+	t.Run("2nnn: Sets the program counter to nnn and adds the previous value to the stack", func(t *testing.T) {
+		emu := NewEmulator()
+		emu.ProgramCounter = uint16(0x900)
+		emu.Decode(0x2228)
+
+		assert.Equal(t, uint16(0x228), emu.ProgramCounter)
+		assert.Equal(t, uint16(0x900), emu.Stack[0])
+		assert.Equal(t, uint16(1), emu.StackPointer)
 	})
 
 	t.Run("6xnn: Assigns nn to v register x", func(t *testing.T) {
