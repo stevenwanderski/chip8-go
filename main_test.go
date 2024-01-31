@@ -75,6 +75,26 @@ func TestDecoder(t *testing.T) {
 		})
 	})
 
+	t.Run("4xnn: Skip next instruction if VRegister[x] does not equal nn", func(t *testing.T) {
+		t.Run("VRegister[x] does not equal nn", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.ProgramCounter = uint16(0x900)
+			emu.VRegisters[2] = uint16(0xFF)
+			emu.Decode(0x42AA)
+
+			assert.Equal(t, uint16(0x902), emu.ProgramCounter)
+		})
+
+		t.Run("VRegister[x] equals nn", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.ProgramCounter = uint16(0x900)
+			emu.VRegisters[2] = uint16(0xFF)
+			emu.Decode(0x42FF)
+
+			assert.Equal(t, uint16(0x900), emu.ProgramCounter)
+		})
+	})
+
 	t.Run("6xnn: Assigns nn to v register x", func(t *testing.T) {
 		emu := NewEmulator()
 		emu.Decode(0x6105)
