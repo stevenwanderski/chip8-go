@@ -197,6 +197,18 @@ func (e *Emulator) Decode(opcode uint16) {
 		}
 		break
 
+	case 0x5000:
+		x := (opcode & 0x0F00) >> 8
+		y := (opcode & 0x00F0) >> 4
+
+		if e.VRegisters[x] == e.VRegisters[y] {
+			e.ProgramCounter += 2
+			fmt.Printf("Opcode %x: Set ProgramCounter to %d\n", opcode, e.ProgramCounter)
+		} else {
+			fmt.Printf("Opcode %x: Skip because VRegister[%d] (%d) does not equal VRegister[%d] (%d)\n", opcode, x, e.VRegisters[x], y, e.VRegisters[y])
+		}
+		break
+
 	case 0x6000:
 		x := (opcode & 0x0F00) >> 8
 		nn := opcode & 0x00FF
@@ -211,6 +223,35 @@ func (e *Emulator) Decode(opcode uint16) {
 		e.VRegisters[x] += nn
 
 		fmt.Printf("Opcode %x: Add %d to VRegister %d\n", opcode, nn, x)
+		break
+
+	case 0x8000:
+		switch opcode & 0x000F {
+		case 0:
+			x := (opcode & 0x0F00) >> 8
+			y := (opcode & 0x00F0) >> 4
+			e.VRegisters[x] = e.VRegisters[y]
+
+			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d)\n", opcode, x, y, e.VRegisters[y])
+			break
+
+		case 1:
+			x := (opcode & 0x0F00) >> 8
+			y := (opcode & 0x00F0) >> 4
+			e.VRegisters[x] = e.VRegisters[x] | e.VRegisters[y]
+
+			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) OR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
+			break
+
+		case 2:
+			x := (opcode & 0x0F00) >> 8
+			y := (opcode & 0x00F0) >> 4
+			e.VRegisters[x] = e.VRegisters[x] & e.VRegisters[y]
+
+			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) AND VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
+			break
+		}
+
 		break
 
 	case 0xA000:

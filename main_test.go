@@ -95,6 +95,28 @@ func TestDecoder(t *testing.T) {
 		})
 	})
 
+	t.Run("5xy0: Skip next instruction if VRegister[x] equals VRegister[y]", func(t *testing.T) {
+		t.Run("VRegister[x] equals VRegister[y]", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.ProgramCounter = uint16(0x900)
+			emu.VRegisters[2] = uint16(0xFF)
+			emu.VRegisters[3] = uint16(0xFF)
+			emu.Decode(0x5230)
+
+			assert.Equal(t, uint16(0x902), emu.ProgramCounter)
+		})
+
+		t.Run("VRegister[x] does not equal VRegister[y]", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.ProgramCounter = uint16(0x900)
+			emu.VRegisters[2] = uint16(0xFF)
+			emu.VRegisters[3] = uint16(0xAA)
+			emu.Decode(0x5230)
+
+			assert.Equal(t, uint16(0x900), emu.ProgramCounter)
+		})
+	})
+
 	t.Run("6xnn: Assigns nn to v register x", func(t *testing.T) {
 		emu := NewEmulator()
 		emu.Decode(0x6105)
@@ -114,6 +136,33 @@ func TestDecoder(t *testing.T) {
 		want := uint16(15)
 
 		assert.Equal(t, want, got)
+	})
+
+	t.Run("8xy0: Set v register x to the value of v register y", func(t *testing.T) {
+		emu := NewEmulator()
+		emu.VRegisters[2] = uint16(0x1)
+		emu.VRegisters[3] = uint16(0x2)
+		emu.Decode(0x8230)
+
+		assert.Equal(t, uint16(0x2), emu.VRegisters[2])
+	})
+
+	t.Run("8xy1: Set VRegister[x] to the value of VRegister[x] OR VRegister[y]", func(t *testing.T) {
+		emu := NewEmulator()
+		emu.VRegisters[2] = uint16(0xcc)
+		emu.VRegisters[3] = uint16(0xaa)
+		emu.Decode(0x8231)
+
+		assert.Equal(t, uint16(0xee), emu.VRegisters[2])
+	})
+
+	t.Run("8xy2: Set VRegister[x] to the value of VRegister[x] AND VRegister[y]", func(t *testing.T) {
+		emu := NewEmulator()
+		emu.VRegisters[2] = uint16(0xcc)
+		emu.VRegisters[3] = uint16(0xaa)
+		emu.Decode(0x8232)
+
+		assert.Equal(t, uint16(0x88), emu.VRegisters[2])
 	})
 
 	t.Run("Annn: Sets IRegister to nnn", func(t *testing.T) {
