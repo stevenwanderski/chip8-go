@@ -173,6 +173,19 @@ func (e *Emulator) Decode(opcode uint16) {
 		fmt.Printf("Opcode %x: Set ProgramCounter to %d and add %d to the stack \n", opcode, nnn, oldValue)
 		break
 
+	case 0x3000:
+		x := (opcode & 0x0F00) >> 8
+		nn := opcode & 0x00FF
+
+		if e.VRegisters[x] == nn {
+			e.ProgramCounter += 2
+			fmt.Printf("Opcode %x: Set ProgramCounter to %d\n", opcode, e.ProgramCounter)
+		} else {
+			fmt.Printf("Opcode %x: Skip because VRegister[%d] (%d) does not equal nn (%d)\n", opcode, x, e.VRegisters[x], nn)
+		}
+
+		break
+
 	case 0x6000:
 		x := (opcode & 0x0F00) >> 8
 		nn := opcode & 0x00FF
