@@ -9,9 +9,9 @@ import (
 
 const (
 	RAM_SIZE       uint16 = 4096
-	SCREEN_WIDTH   uint8  = 64
-	SCREEN_HEIGHT  uint8  = 32
-	SCREEN_SCALE   uint8  = 10
+	SCREEN_WIDTH   uint16 = 64
+	SCREEN_HEIGHT  uint16 = 32
+	SCREEN_SCALE   uint16 = 10
 	REGISTER_COUNT uint8  = 16
 	STACK_SIZE     uint8  = 16
 	KEY_COUNT      uint8  = 16
@@ -21,8 +21,8 @@ const (
 type Emulator struct {
 	ProgramCounter uint16
 	Ram            [RAM_SIZE]byte
-	Screen         [uint16(SCREEN_WIDTH) * uint16(SCREEN_HEIGHT)]bool
-	VRegisters     [REGISTER_COUNT]uint8
+	Screen         [SCREEN_WIDTH * SCREEN_HEIGHT]bool
+	VRegisters     [REGISTER_COUNT]uint16
 	IRegister      uint16
 	Stack          [STACK_SIZE]uint16
 	StackPointer   uint16
@@ -44,8 +44,8 @@ func (d *Display) Run(emulator Emulator) {
 		"CHIP-8",
 		sdl.WINDOWPOS_UNDEFINED,
 		sdl.WINDOWPOS_UNDEFINED,
-		int32(SCREEN_WIDTH)*int32(SCREEN_SCALE),
-		int32(SCREEN_HEIGHT)*int32(SCREEN_SCALE),
+		int32(SCREEN_WIDTH*SCREEN_SCALE),
+		int32(SCREEN_HEIGHT*SCREEN_SCALE),
 		sdl.WINDOW_SHOWN,
 	)
 	if err != nil {
@@ -177,7 +177,7 @@ func (e *Emulator) Decode(opcode uint16) {
 		x := (opcode & 0x0F00) >> 8
 		nn := opcode & 0x00FF
 
-		if e.VRegisters[x] == uint8(nn) {
+		if e.VRegisters[x] == nn {
 			e.ProgramCounter += 2
 			fmt.Printf("Opcode %x: Set ProgramCounter to %d\n", opcode, e.ProgramCounter)
 		} else {
@@ -189,7 +189,7 @@ func (e *Emulator) Decode(opcode uint16) {
 		x := (opcode & 0x0F00) >> 8
 		nn := opcode & 0x00FF
 
-		if e.VRegisters[x] != uint8(nn) {
+		if e.VRegisters[x] != nn {
 			e.ProgramCounter += 2
 			fmt.Printf("Opcode %x: Set ProgramCounter to %d\n", opcode, e.ProgramCounter)
 		} else {
@@ -197,22 +197,10 @@ func (e *Emulator) Decode(opcode uint16) {
 		}
 		break
 
-	case 0x5000:
-		x := (opcode & 0x0F00) >> 8
-		y := (opcode & 0x00F0) >> 4
-
-		if e.VRegisters[x] == e.VRegisters[y] {
-			e.ProgramCounter += 2
-			fmt.Printf("Opcode %x: Set ProgramCounter to %d\n", opcode, e.ProgramCounter)
-		} else {
-			fmt.Printf("Opcode %x: Skip because VRegister[%d] (%d) does not equal VRegister[%d] (%d)\n", opcode, x, e.VRegisters[x], y, e.VRegisters[y])
-		}
-		break
-
 	case 0x6000:
 		x := (opcode & 0x0F00) >> 8
 		nn := opcode & 0x00FF
-		e.VRegisters[x] = uint8(nn)
+		e.VRegisters[x] = nn
 
 		fmt.Printf("Opcode %x: Set VRegister %d to %d\n", opcode, x, nn)
 		break
@@ -220,64 +208,9 @@ func (e *Emulator) Decode(opcode uint16) {
 	case 0x7000:
 		x := (opcode & 0x0F00) >> 8
 		nn := opcode & 0x00FF
-		e.VRegisters[x] += uint8(nn)
+		e.VRegisters[x] += nn
 
-		fmt.Printf("Opcode %x: Add %d to VRegister %d (%d)\n", opcode, nn, x, e.VRegisters[x])
-		break
-
-	case 0x8000:
-		switch opcode & 0x000F {
-		case 0:
-			x := (opcode & 0x0F00) >> 8
-			y := (opcode & 0x00F0) >> 4
-			e.VRegisters[x] = e.VRegisters[y]
-
-			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d)\n", opcode, x, y, e.VRegisters[y])
-			break
-
-		case 1:
-			x := (opcode & 0x0F00) >> 8
-			y := (opcode & 0x00F0) >> 4
-			e.VRegisters[x] = e.VRegisters[x] | e.VRegisters[y]
-
-			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) OR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
-			break
-
-		case 2:
-			x := (opcode & 0x0F00) >> 8
-			y := (opcode & 0x00F0) >> 4
-			e.VRegisters[x] = e.VRegisters[x] & e.VRegisters[y]
-
-			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) AND VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
-			break
-
-		case 3:
-			x := (opcode & 0x0F00) >> 8
-			y := (opcode & 0x00F0) >> 4
-			e.VRegisters[x] = e.VRegisters[x] ^ e.VRegisters[y]
-
-			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
-			break
-
-		case 4:
-			x := (opcode & 0x0F00) >> 8
-			y := (opcode & 0x00F0) >> 4
-			total := uint16(e.VRegisters[x]) + uint16(e.VRegisters[y])
-
-			fmt.Println(total)
-
-			if total > uint16(255) {
-				e.VRegisters[x] = uint8(255)
-				e.VRegisters[0xF] = uint8(1)
-			} else {
-				e.VRegisters[x] = uint8(total)
-				e.VRegisters[0xF] = uint8(0)
-			}
-
-			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
-			break
-		}
-
+		fmt.Printf("Opcode %x: Add %d to VRegister %d\n", opcode, nn, x)
 		break
 
 	case 0xA000:
@@ -290,14 +223,14 @@ func (e *Emulator) Decode(opcode uint16) {
 	case 0xD000:
 		x := (opcode & 0x0F00) >> 8
 		y := (opcode & 0x00F0) >> 4
-		n := uint8(opcode & 0x000F)
+		n := opcode & 0x000F
 
 		start_addr := e.IRegister
 
-		var i uint8 = 0
-		var j uint8 = 0
+		var i uint16 = 0
+		var j uint16 = 0
 		for i = 0; i < n; i++ {
-			pixels := e.Ram[start_addr+uint16(i)]
+			pixels := e.Ram[start_addr+i]
 
 			for j = 0; j < 8; j++ {
 				if pixels&(0b10000000>>j) != 0 {
