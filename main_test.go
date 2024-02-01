@@ -165,6 +165,37 @@ func TestDecoder(t *testing.T) {
 		assert.Equal(t, uint16(0x88), emu.VRegisters[2])
 	})
 
+	t.Run("8xy3: Set Vx to Vx XOR Vy", func(t *testing.T) {
+		emu := NewEmulator()
+		emu.VRegisters[2] = uint16(12)
+		emu.VRegisters[3] = uint16(6)
+		emu.Decode(0x8233)
+
+		assert.Equal(t, uint16(10), emu.VRegisters[2])
+	})
+
+	t.Run("8xy4: Set Vx to Vx + Vy", func(t *testing.T) {
+		t.Run("Total is less than 8-bits (255)", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.VRegisters[2] = uint16(12)
+			emu.VRegisters[3] = uint16(6)
+			emu.Decode(0x8234)
+
+			assert.Equal(t, uint16(18), emu.VRegisters[2])
+			assert.Equal(t, uint16(0), emu.VRegisters[0xF])
+		})
+
+		t.Run("Total is greater than 8-bits (255)", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.VRegisters[2] = uint16(255)
+			emu.VRegisters[3] = uint16(1)
+			emu.Decode(0x8234)
+
+			assert.Equal(t, uint16(255), emu.VRegisters[2])
+			assert.Equal(t, uint16(1), emu.VRegisters[0xF])
+		})
+	})
+
 	t.Run("Annn: Sets IRegister to nnn", func(t *testing.T) {
 		emu := NewEmulator()
 		emu.Decode(0xA105)

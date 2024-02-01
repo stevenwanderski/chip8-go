@@ -250,6 +250,32 @@ func (e *Emulator) Decode(opcode uint16) {
 
 			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) AND VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
 			break
+
+		case 3:
+			x := (opcode & 0x0F00) >> 8
+			y := (opcode & 0x00F0) >> 4
+			e.VRegisters[x] = e.VRegisters[x] ^ e.VRegisters[y]
+
+			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
+			break
+
+		case 4:
+			x := (opcode & 0x0F00) >> 8
+			y := (opcode & 0x00F0) >> 4
+			total := uint16(e.VRegisters[x]) + uint16(e.VRegisters[y])
+
+			fmt.Println(total)
+
+			if total > uint16(255) {
+				e.VRegisters[x] = uint16(255)
+				e.VRegisters[0xF] = uint16(1)
+			} else {
+				e.VRegisters[x] = uint16(total)
+				e.VRegisters[0xF] = uint16(0)
+			}
+
+			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
+			break
 		}
 
 		break
