@@ -196,6 +196,28 @@ func TestDecoder(t *testing.T) {
 		})
 	})
 
+	t.Run("8xy5: Set Vx to Vx - Vy", func(t *testing.T) {
+		t.Run("Vx is greater than Vy", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.VRegisters[2] = uint16(12)
+			emu.VRegisters[3] = uint16(8)
+			emu.Decode(0x8235)
+
+			assert.Equal(t, uint16(4), emu.VRegisters[2])
+			assert.Equal(t, uint16(0), emu.VRegisters[0xF])
+		})
+
+		t.Run("Vx is less than Vy", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.VRegisters[2] = uint16(12)
+			emu.VRegisters[3] = uint16(14)
+			emu.Decode(0x8235)
+
+			assert.Equal(t, uint16(0), emu.VRegisters[2])
+			assert.Equal(t, uint16(1), emu.VRegisters[0xF])
+		})
+	})
+
 	t.Run("Annn: Sets IRegister to nnn", func(t *testing.T) {
 		emu := NewEmulator()
 		emu.Decode(0xA105)
