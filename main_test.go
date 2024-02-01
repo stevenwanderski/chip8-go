@@ -59,7 +59,7 @@ func TestDecoder(t *testing.T) {
 		t.Run("VRegister[x] equals nn", func(t *testing.T) {
 			emu := NewEmulator()
 			emu.ProgramCounter = uint16(0x900)
-			emu.VRegisters[2] = uint16(0xFF)
+			emu.VRegisters[2] = uint8(0xFF)
 			emu.Decode(0x32FF)
 
 			assert.Equal(t, uint16(0x902), emu.ProgramCounter)
@@ -68,7 +68,7 @@ func TestDecoder(t *testing.T) {
 		t.Run("VRegister[x] does not equal nn", func(t *testing.T) {
 			emu := NewEmulator()
 			emu.ProgramCounter = uint16(0x900)
-			emu.VRegisters[2] = uint16(0xAA)
+			emu.VRegisters[2] = uint8(0xAA)
 			emu.Decode(0x32FF)
 
 			assert.Equal(t, uint16(0x900), emu.ProgramCounter)
@@ -79,7 +79,7 @@ func TestDecoder(t *testing.T) {
 		t.Run("VRegister[x] does not equal nn", func(t *testing.T) {
 			emu := NewEmulator()
 			emu.ProgramCounter = uint16(0x900)
-			emu.VRegisters[2] = uint16(0xFF)
+			emu.VRegisters[2] = uint8(0xFF)
 			emu.Decode(0x42AA)
 
 			assert.Equal(t, uint16(0x902), emu.ProgramCounter)
@@ -88,7 +88,7 @@ func TestDecoder(t *testing.T) {
 		t.Run("VRegister[x] equals nn", func(t *testing.T) {
 			emu := NewEmulator()
 			emu.ProgramCounter = uint16(0x900)
-			emu.VRegisters[2] = uint16(0xFF)
+			emu.VRegisters[2] = uint8(0xFF)
 			emu.Decode(0x42FF)
 
 			assert.Equal(t, uint16(0x900), emu.ProgramCounter)
@@ -99,8 +99,8 @@ func TestDecoder(t *testing.T) {
 		t.Run("VRegister[x] equals VRegister[y]", func(t *testing.T) {
 			emu := NewEmulator()
 			emu.ProgramCounter = uint16(0x900)
-			emu.VRegisters[2] = uint16(0xFF)
-			emu.VRegisters[3] = uint16(0xFF)
+			emu.VRegisters[2] = uint8(0xFF)
+			emu.VRegisters[3] = uint8(0xFF)
 			emu.Decode(0x5230)
 
 			assert.Equal(t, uint16(0x902), emu.ProgramCounter)
@@ -109,8 +109,8 @@ func TestDecoder(t *testing.T) {
 		t.Run("VRegister[x] does not equal VRegister[y]", func(t *testing.T) {
 			emu := NewEmulator()
 			emu.ProgramCounter = uint16(0x900)
-			emu.VRegisters[2] = uint16(0xFF)
-			emu.VRegisters[3] = uint16(0xAA)
+			emu.VRegisters[2] = uint8(0xFF)
+			emu.VRegisters[3] = uint8(0xAA)
 			emu.Decode(0x5230)
 
 			assert.Equal(t, uint16(0x900), emu.ProgramCounter)
@@ -122,47 +122,78 @@ func TestDecoder(t *testing.T) {
 		emu.Decode(0x6105)
 
 		got := emu.VRegisters[1]
-		want := uint16(0x05)
+		want := uint8(0x05)
 
 		assert.Equal(t, want, got)
 	})
 
 	t.Run("7xnn: Adds nn to v register x", func(t *testing.T) {
 		emu := NewEmulator()
-		emu.VRegisters[1] = uint16(10)
+		emu.VRegisters[1] = uint8(10)
 		emu.Decode(0x7105)
 
 		got := emu.VRegisters[1]
-		want := uint16(15)
+		want := uint8(15)
 
 		assert.Equal(t, want, got)
 	})
 
 	t.Run("8xy0: Set v register x to the value of v register y", func(t *testing.T) {
 		emu := NewEmulator()
-		emu.VRegisters[2] = uint16(0x1)
-		emu.VRegisters[3] = uint16(0x2)
+		emu.VRegisters[2] = uint8(0x1)
+		emu.VRegisters[3] = uint8(0x2)
 		emu.Decode(0x8230)
 
-		assert.Equal(t, uint16(0x2), emu.VRegisters[2])
+		assert.Equal(t, uint8(0x2), emu.VRegisters[2])
 	})
 
 	t.Run("8xy1: Set VRegister[x] to the value of VRegister[x] OR VRegister[y]", func(t *testing.T) {
 		emu := NewEmulator()
-		emu.VRegisters[2] = uint16(0xcc)
-		emu.VRegisters[3] = uint16(0xaa)
+		emu.VRegisters[2] = uint8(0xcc)
+		emu.VRegisters[3] = uint8(0xaa)
 		emu.Decode(0x8231)
 
-		assert.Equal(t, uint16(0xee), emu.VRegisters[2])
+		assert.Equal(t, uint8(0xee), emu.VRegisters[2])
 	})
 
 	t.Run("8xy2: Set VRegister[x] to the value of VRegister[x] AND VRegister[y]", func(t *testing.T) {
 		emu := NewEmulator()
-		emu.VRegisters[2] = uint16(0xcc)
-		emu.VRegisters[3] = uint16(0xaa)
+		emu.VRegisters[2] = uint8(0xcc)
+		emu.VRegisters[3] = uint8(0xaa)
 		emu.Decode(0x8232)
 
-		assert.Equal(t, uint16(0x88), emu.VRegisters[2])
+		assert.Equal(t, uint8(0x88), emu.VRegisters[2])
+	})
+
+	t.Run("8xy3: Set Vx to Vx XOR Vy", func(t *testing.T) {
+		emu := NewEmulator()
+		emu.VRegisters[2] = uint8(12)
+		emu.VRegisters[3] = uint8(6)
+		emu.Decode(0x8233)
+
+		assert.Equal(t, uint8(10), emu.VRegisters[2])
+	})
+
+	t.Run("8xy4: Set Vx to Vx + Vy", func(t *testing.T) {
+		t.Run("Total is less than 8-bits (255)", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.VRegisters[2] = uint8(12)
+			emu.VRegisters[3] = uint8(6)
+			emu.Decode(0x8234)
+
+			assert.Equal(t, uint8(18), emu.VRegisters[2])
+			assert.Equal(t, uint8(0), emu.VRegisters[0xF])
+		})
+
+		t.Run("Total is greater than 8-bits (255)", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.VRegisters[2] = uint8(255)
+			emu.VRegisters[3] = uint8(1)
+			emu.Decode(0x8234)
+
+			assert.Equal(t, uint8(255), emu.VRegisters[2])
+			assert.Equal(t, uint8(1), emu.VRegisters[0xF])
+		})
 	})
 
 	t.Run("Annn: Sets IRegister to nnn", func(t *testing.T) {
