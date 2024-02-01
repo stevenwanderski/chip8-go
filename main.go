@@ -222,7 +222,7 @@ func (e *Emulator) Decode(opcode uint16) {
 		nn := opcode & 0x00FF
 		e.VRegisters[x] += uint8(nn)
 
-		fmt.Printf("Opcode %x: Add %d to VRegister %d\n", opcode, nn, x)
+		fmt.Printf("Opcode %x: Add %d to VRegister %d (%d)\n", opcode, nn, x, e.VRegisters[x])
 		break
 
 	case 0x8000:
