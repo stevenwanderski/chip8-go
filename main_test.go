@@ -218,6 +218,68 @@ func TestDecoder(t *testing.T) {
 		})
 	})
 
+	t.Run("8xy6: Right shift Vx by 1 and store that bit in VF", func(t *testing.T) {
+		t.Run("The shifted bit is 1", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.VRegisters[2] = uint16(0x00C1)
+			emu.Decode(0x8206)
+
+			assert.Equal(t, uint16(0x60), emu.VRegisters[2])
+			assert.Equal(t, uint16(1), emu.VRegisters[0xF])
+		})
+
+		t.Run("The shifted bit is 0", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.VRegisters[2] = uint16(0x00CC)
+			emu.Decode(0x8206)
+
+			assert.Equal(t, uint16(0x66), emu.VRegisters[2])
+			assert.Equal(t, uint16(0), emu.VRegisters[0xF])
+		})
+	})
+
+	t.Run("8xy7: Set Vx to Vy - Vx", func(t *testing.T) {
+		t.Run("Vy is greater than Vx", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.VRegisters[2] = uint16(10)
+			emu.VRegisters[3] = uint16(12)
+			emu.Decode(0x8237)
+
+			assert.Equal(t, uint16(2), emu.VRegisters[2])
+			assert.Equal(t, uint16(1), emu.VRegisters[0xF])
+		})
+
+		t.Run("Vy is less than Vx", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.VRegisters[2] = uint16(12)
+			emu.VRegisters[3] = uint16(10)
+			emu.Decode(0x8237)
+
+			assert.Equal(t, uint16(0), emu.VRegisters[2])
+			assert.Equal(t, uint16(0), emu.VRegisters[0xF])
+		})
+	})
+
+	t.Run("8xyE: Left shift Vx by 1 and store that bit in VF", func(t *testing.T) {
+		t.Run("The shifted bit is 1", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.VRegisters[2] = uint16(0b10000000)
+			emu.Decode(0x820E)
+
+			assert.Equal(t, uint16(0b100000000), emu.VRegisters[2])
+			assert.Equal(t, uint16(1), emu.VRegisters[0xF])
+		})
+
+		t.Run("The shifted bit is 0", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.VRegisters[2] = uint16(0b01000000)
+			emu.Decode(0x820E)
+
+			assert.Equal(t, uint16(0b10000000), emu.VRegisters[2])
+			assert.Equal(t, uint16(0), emu.VRegisters[0xF])
+		})
+	})
+
 	t.Run("Annn: Sets IRegister to nnn", func(t *testing.T) {
 		emu := NewEmulator()
 		emu.Decode(0xA105)

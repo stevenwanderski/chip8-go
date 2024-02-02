@@ -289,6 +289,43 @@ func (e *Emulator) Decode(opcode uint16) {
 
 			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
 			break
+
+		case 6:
+			x := (opcode & 0x0F00) >> 8
+			v := e.VRegisters[x]
+
+			e.VRegisters[0xF] = v & 1
+			e.VRegisters[x] = v >> 1
+
+			// fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
+			break
+
+		case 7:
+			x := (opcode & 0x0F00) >> 8
+			y := (opcode & 0x00F0) >> 4
+
+			if e.VRegisters[y] > e.VRegisters[x] {
+				e.VRegisters[x] = e.VRegisters[y] - e.VRegisters[x]
+				e.VRegisters[0xF] = 1
+			} else {
+				e.VRegisters[x] = 0
+				e.VRegisters[0xF] = 0
+			}
+
+			// fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
+			break
+
+		case 0xE:
+			x := (opcode & 0x0F00) >> 8
+			v := e.VRegisters[x]
+
+			fmt.Println(v >> 7 & 1)
+			e.VRegisters[0xF] = v >> 7 & 1
+			e.VRegisters[x] = v << 1
+
+			// fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
+			break
+
 		}
 
 		break
@@ -336,7 +373,7 @@ func NewEmulator() Emulator {
 
 func main() {
 	emu := NewEmulator()
-	emu.LoadRom("./roms/ibm-logo.ch8")
+	emu.LoadRom("./roms/test-opcode.ch8")
 
 	display := Display{}
 	display.Run(emu)
