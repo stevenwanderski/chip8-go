@@ -280,6 +280,28 @@ func TestDecoder(t *testing.T) {
 		})
 	})
 
+	t.Run("9xy0: Skip if Vx != Vy", func(t *testing.T) {
+		t.Run("Vx != Vy", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.ProgramCounter = uint16(2)
+			emu.VRegisters[2] = uint16(0xcc)
+			emu.VRegisters[3] = uint16(0xaa)
+			emu.Decode(0x9230)
+
+			assert.Equal(t, uint16(4), emu.ProgramCounter)
+		})
+
+		t.Run("Vx == Vy", func(t *testing.T) {
+			emu := NewEmulator()
+			emu.ProgramCounter = uint16(2)
+			emu.VRegisters[2] = uint16(0xcc)
+			emu.VRegisters[3] = uint16(0xcc)
+			emu.Decode(0x9230)
+
+			assert.Equal(t, uint16(2), emu.ProgramCounter)
+		})
+	})
+
 	t.Run("Annn: Sets IRegister to nnn", func(t *testing.T) {
 		emu := NewEmulator()
 		emu.Decode(0xA105)
@@ -288,6 +310,15 @@ func TestDecoder(t *testing.T) {
 		want := uint16(0x105)
 
 		assert.Equal(t, want, got)
+	})
+
+	t.Run("Bnnn: Sets PC to V0 + nnn", func(t *testing.T) {
+		emu := NewEmulator()
+		emu.ProgramCounter = uint16(2)
+		emu.VRegisters[0] = uint16(4)
+		emu.Decode(0xB003)
+
+		assert.Equal(t, uint16(9), emu.ProgramCounter)
 	})
 
 	t.Run("Dxyn: Adds a sprite to the Screen array", func(t *testing.T) {

@@ -330,11 +330,30 @@ func (e *Emulator) Decode(opcode uint16) {
 
 		break
 
+	case 0x9000:
+		x := (opcode & 0x0F00) >> 8
+		y := (opcode & 0x00F0) >> 4
+
+		if e.VRegisters[x] != e.VRegisters[y] {
+			e.ProgramCounter += 2
+		}
+
+		// fmt.Printf("Opcode %x: Set IRegister to %d\n", opcode, nnn)
+		break
+
 	case 0xA000:
 		nnn := opcode & 0x0FFF
 		e.IRegister = nnn
 
 		fmt.Printf("Opcode %x: Set IRegister to %d\n", opcode, nnn)
+		break
+
+	case 0xB000:
+		nnn := opcode & 0x0FFF
+		v := e.VRegisters[0]
+		e.ProgramCounter += v + nnn
+
+		// fmt.Printf("Opcode %x: Set IRegister to %d\n", opcode, nnn)
 		break
 
 	case 0xD000:
@@ -374,6 +393,7 @@ func NewEmulator() Emulator {
 func main() {
 	emu := NewEmulator()
 	emu.LoadRom("./roms/test-opcode.ch8")
+	// emu.LoadRom("./roms/ibm-logo.ch8")
 
 	display := Display{}
 	display.Run(emu)
