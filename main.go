@@ -262,15 +262,15 @@ func (e *Emulator) Decode(opcode uint16) {
 		case 4:
 			x := (opcode & 0x0F00) >> 8
 			y := (opcode & 0x00F0) >> 4
-			total := uint16(e.VRegisters[x]) + uint16(e.VRegisters[y])
+			total := e.VRegisters[x] + e.VRegisters[y]
 
-			if total > uint16(255) {
-				e.VRegisters[x] = uint8(255)
+			if total > uint8(255) {
 				e.VRegisters[0xF] = uint8(1)
 			} else {
-				e.VRegisters[x] = uint8(total)
 				e.VRegisters[0xF] = uint8(0)
 			}
+
+			e.VRegisters[x] = total
 
 			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
 			break
@@ -280,12 +280,12 @@ func (e *Emulator) Decode(opcode uint16) {
 			y := (opcode & 0x00F0) >> 4
 
 			if e.VRegisters[x] < e.VRegisters[y] {
-				e.VRegisters[x] = uint8(0)
 				e.VRegisters[0xF] = uint8(1)
 			} else {
-				e.VRegisters[x] = e.VRegisters[x] - e.VRegisters[y]
 				e.VRegisters[0xF] = uint8(0)
 			}
+
+			e.VRegisters[x] = e.VRegisters[x] - e.VRegisters[y]
 
 			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
 			break
