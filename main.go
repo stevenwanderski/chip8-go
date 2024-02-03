@@ -22,7 +22,7 @@ type Emulator struct {
 	ProgramCounter uint16
 	Ram            [RAM_SIZE]byte
 	Screen         [SCREEN_WIDTH * SCREEN_HEIGHT]bool
-	VRegisters     [REGISTER_COUNT]uint16
+	VRegisters     [REGISTER_COUNT]uint8
 	IRegister      uint16
 	Stack          [STACK_SIZE]uint16
 	StackPointer   uint16
@@ -175,7 +175,7 @@ func (e *Emulator) Decode(opcode uint16) {
 
 	case 0x3000:
 		x := (opcode & 0x0F00) >> 8
-		nn := opcode & 0x00FF
+		nn := uint8(opcode & 0x00FF)
 
 		if e.VRegisters[x] == nn {
 			e.ProgramCounter += 2
@@ -187,7 +187,7 @@ func (e *Emulator) Decode(opcode uint16) {
 
 	case 0x4000:
 		x := (opcode & 0x0F00) >> 8
-		nn := opcode & 0x00FF
+		nn := uint8(opcode & 0x00FF)
 
 		if e.VRegisters[x] != nn {
 			e.ProgramCounter += 2
@@ -212,7 +212,7 @@ func (e *Emulator) Decode(opcode uint16) {
 	case 0x6000:
 		x := (opcode & 0x0F00) >> 8
 		nn := opcode & 0x00FF
-		e.VRegisters[x] = nn
+		e.VRegisters[x] = uint8(nn)
 
 		fmt.Printf("Opcode %x: Set VRegister %d to %d\n", opcode, x, nn)
 		break
@@ -220,7 +220,7 @@ func (e *Emulator) Decode(opcode uint16) {
 	case 0x7000:
 		x := (opcode & 0x0F00) >> 8
 		nn := opcode & 0x00FF
-		e.VRegisters[x] += nn
+		e.VRegisters[x] += uint8(nn)
 
 		fmt.Printf("Opcode %x: Add %d to VRegister[%d] (%d)\n", opcode, nn, x, e.VRegisters[x])
 		break
@@ -265,11 +265,11 @@ func (e *Emulator) Decode(opcode uint16) {
 			total := uint16(e.VRegisters[x]) + uint16(e.VRegisters[y])
 
 			if total > uint16(255) {
-				e.VRegisters[x] = uint16(255)
-				e.VRegisters[0xF] = uint16(1)
+				e.VRegisters[x] = uint8(255)
+				e.VRegisters[0xF] = uint8(1)
 			} else {
-				e.VRegisters[x] = uint16(total)
-				e.VRegisters[0xF] = uint16(0)
+				e.VRegisters[x] = uint8(total)
+				e.VRegisters[0xF] = uint8(0)
 			}
 
 			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
@@ -280,11 +280,11 @@ func (e *Emulator) Decode(opcode uint16) {
 			y := (opcode & 0x00F0) >> 4
 
 			if e.VRegisters[x] < e.VRegisters[y] {
-				e.VRegisters[x] = uint16(0)
-				e.VRegisters[0xF] = uint16(1)
+				e.VRegisters[x] = uint8(0)
+				e.VRegisters[0xF] = uint8(1)
 			} else {
 				e.VRegisters[x] = e.VRegisters[x] - e.VRegisters[y]
-				e.VRegisters[0xF] = uint16(0)
+				e.VRegisters[0xF] = uint8(0)
 			}
 
 			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
@@ -349,9 +349,9 @@ func (e *Emulator) Decode(opcode uint16) {
 		break
 
 	case 0xB000:
-		nnn := opcode & 0x0FFF
+		nnn := uint8(opcode & 0x0FFF)
 		v := e.VRegisters[0]
-		e.ProgramCounter += v + nnn
+		e.ProgramCounter += uint16(v + nnn)
 
 		// fmt.Printf("Opcode %x: Set IRegister to %d\n", opcode, nnn)
 		break
@@ -359,17 +359,17 @@ func (e *Emulator) Decode(opcode uint16) {
 	case 0xD000:
 		x := (opcode & 0x0F00) >> 8
 		y := (opcode & 0x00F0) >> 4
-		n := opcode & 0x000F
+		n := uint8(opcode & 0x000F)
 
 		start_addr := e.IRegister
 
-		var i uint16 = 0
-		var j uint16 = 0
+		var i uint8 = 0
+		var j uint8 = 0
 
 		// For each row (n)
 		for i = 0; i < n; i++ {
 			// Get the value from RAM
-			pixels := e.Ram[start_addr+i]
+			pixels := e.Ram[start_addr+uint16(i)]
 
 			// For each bit (0 or 1) in the RAM value
 			for j = 0; j < 8; j++ {
@@ -378,10 +378,10 @@ func (e *Emulator) Decode(opcode uint16) {
 					// Get value from VRegister[x] and add the bit position (j).
 					// Then modulo it by the width of the screen to simulate wrapping.
 					// This way x_position will never be greater than the screen width.
-					x_position := (e.VRegisters[x] + j)
+					x_position := uint16(e.VRegisters[x] + j)
 
 					// Get the "Y" screen position from the y VRegister
-					y_position := (e.VRegisters[y] + i)
+					y_position := uint16(e.VRegisters[y] + i)
 
 					screen_index := (y_position * SCREEN_WIDTH) + x_position
 					e.Screen[screen_index] = true
@@ -402,8 +402,8 @@ func NewEmulator() Emulator {
 
 func main() {
 	emu := NewEmulator()
-	// emu.LoadRom("./roms/test-opcode.ch8")
-	emu.LoadRom("./roms/ibm-logo.ch8")
+	emu.LoadRom("./roms/test-opcode.ch8")
+	// emu.LoadRom("./roms/ibm-logo.ch8")
 
 	display := Display{}
 	display.Run(emu)
