@@ -365,13 +365,23 @@ func (e *Emulator) Decode(opcode uint16) {
 
 		var i uint16 = 0
 		var j uint16 = 0
+
+		// For each row (n)
 		for i = 0; i < n; i++ {
+			// Get the value from RAM
 			pixels := e.Ram[start_addr+i]
 
+			// For each bit (0 or 1) in the RAM value
 			for j = 0; j < 8; j++ {
+				// If the bit equals 1
 				if pixels&(0b10000000>>j) != 0 {
-					x_position := (e.VRegisters[x] + j) % SCREEN_WIDTH
-					y_position := (e.VRegisters[y] + i) % SCREEN_HEIGHT
+					// Get value from VRegister[x] and add the bit position (j).
+					// Then modulo it by the width of the screen to simulate wrapping.
+					// This way x_position will never be greater than the screen width.
+					x_position := (e.VRegisters[x] + j)
+
+					// Get the "Y" screen position from the y VRegister
+					y_position := (e.VRegisters[y] + i)
 
 					screen_index := (y_position * SCREEN_WIDTH) + x_position
 					e.Screen[screen_index] = true
@@ -392,8 +402,8 @@ func NewEmulator() Emulator {
 
 func main() {
 	emu := NewEmulator()
-	emu.LoadRom("./roms/test-opcode.ch8")
-	// emu.LoadRom("./roms/ibm-logo.ch8")
+	// emu.LoadRom("./roms/test-opcode.ch8")
+	emu.LoadRom("./roms/ibm-logo.ch8")
 
 	display := Display{}
 	display.Run(emu)
