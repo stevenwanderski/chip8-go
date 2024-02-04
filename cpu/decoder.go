@@ -189,7 +189,6 @@ func (d *Decoder) Run(opcode uint16) {
 			x := (opcode & 0x0F00) >> 8
 			v := e.VRegisters[x]
 
-			fmt.Println(v >> 7 & 1)
 			e.VRegisters[0xF] = v >> 7 & 1
 			e.VRegisters[x] = v << 1
 

@@ -212,7 +212,9 @@ func TestOpcode8xy5(t *testing.T) {
 		emu.VRegisters[3] = 14
 		emu.Decode(0x8235)
 
-		assert.Equal(t, uint8(2), emu.VRegisters[2])
+		// When subtraction causes a negative overflow
+		// 255 comes after 0
+		assert.Equal(t, uint8(254), emu.VRegisters[2])
 		assert.Equal(t, uint8(0), emu.VRegisters[0xF])
 	})
 }
@@ -262,19 +264,19 @@ func TestOpcode8xy7(t *testing.T) {
 func TestOpcode8xyE(t *testing.T) {
 	t.Run("The shifted bit is 1", func(t *testing.T) {
 		emu := NewEmulator()
-		emu.VRegisters[2] = 0b10000000
+		emu.VRegisters[2] = 0x80
 		emu.Decode(0x820E)
 
-		assert.Equal(t, 0b100000000, emu.VRegisters[2])
+		assert.Equal(t, uint8(0x0), emu.VRegisters[2])
 		assert.Equal(t, uint8(1), emu.VRegisters[0xF])
 	})
 
 	t.Run("The shifted bit is 0", func(t *testing.T) {
 		emu := NewEmulator()
-		emu.VRegisters[2] = 0b01000000
+		emu.VRegisters[2] = 0x3
 		emu.Decode(0x820E)
 
-		assert.Equal(t, 0b10000000, emu.VRegisters[2])
+		assert.Equal(t, uint8(0x6), emu.VRegisters[2])
 		assert.Equal(t, uint8(0), emu.VRegisters[0xF])
 	})
 }
