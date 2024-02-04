@@ -25,6 +25,7 @@ type Emulator struct {
 	DelayTimer     uint16
 	SoundTimer     uint16
 	Opcode         uint16
+	Keys           [16]uint8
 }
 
 func (e *Emulator) Cycle() {
@@ -48,6 +49,10 @@ func (e *Emulator) Push(value uint16) {
 func (e *Emulator) Pop() uint16 {
 	e.StackPointer -= 1
 	return e.Stack[e.StackPointer]
+}
+
+func (e *Emulator) Key(value uint8, pressed uint8) {
+	e.Keys[value] = pressed
 }
 
 func (e *Emulator) Fetch() uint16 {

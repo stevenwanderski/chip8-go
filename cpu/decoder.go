@@ -1,6 +1,9 @@
 package cpu
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+)
 
 type Decoder struct {
 	emu *Emulator
@@ -31,7 +34,7 @@ func (d *Decoder) Run(opcode uint16) {
 		nnn := opcode & 0x0FFF
 		e.ProgramCounter = nnn
 
-		fmt.Printf("Opcode %x: Set ProgramCounter to %d\n", opcode, nnn)
+		// fmt.Printf("Opcode %x: Set ProgramCounter to %d\n", opcode, nnn)
 		break
 
 	case 0x2000:
@@ -50,9 +53,9 @@ func (d *Decoder) Run(opcode uint16) {
 
 		if e.VRegisters[x] == nn {
 			e.ProgramCounter += 2
-			fmt.Printf("Opcode %x: Set ProgramCounter to %d\n", opcode, e.ProgramCounter)
+			// fmt.Printf("Opcode %x: Set ProgramCounter to %d\n", opcode, e.ProgramCounter)
 		} else {
-			fmt.Printf("Opcode %x: Skip because VRegister[%d] (%d) does not equal nn (%d)\n", opcode, x, e.VRegisters[x], nn)
+			// fmt.Printf("Opcode %x: Skip because VRegister[%d] (%d) does not equal nn (%d)\n", opcode, x, e.VRegisters[x], nn)
 		}
 		break
 
@@ -223,6 +226,14 @@ func (d *Decoder) Run(opcode uint16) {
 		e.ProgramCounter += uint16(v + nnn)
 
 		// fmt.Printf("Opcode %x: Set IRegister to %d\n", opcode, nnn)
+		break
+
+	case 0xC000:
+		x := (opcode & 0x0F00) >> 8
+		nn := opcode & 0x00FF
+		random_number := rand.Intn(256)
+
+		e.VRegisters[x] = uint8(random_number) & uint8(nn)
 		break
 
 	case 0xD000:

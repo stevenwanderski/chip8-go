@@ -6,8 +6,9 @@ import (
 
 func main() {
 	emu := cpu.NewEmulator()
-	emu.LoadRom("./roms/test-opcode.ch8")
+	// emu.LoadRom("./roms/test-opcode.ch8")
 	// emu.LoadRom("./roms/ibm-logo.ch8")
+	emu.LoadRom("./roms/pong.rom")
 
 	display := cpu.Display{}
 	display.Run(emu)

@@ -322,6 +322,10 @@ func TestOpcodeBnnn(t *testing.T) {
 	assert.Equal(t, uint16(9), emu.ProgramCounter)
 }
 
+func TestOpcodeCxnn(t *testing.T) {
+	// TODO: Find a way to mock rand.Intn
+}
+
 func TestOpcodeDxyn(t *testing.T) {
 	emu := NewEmulator()
 	emu.Decode(0xD123)
