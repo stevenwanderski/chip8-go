@@ -375,3 +375,68 @@ func TestOpcodeEx1A(t *testing.T) {
 		assert.Equal(t, uint16(900), emu.ProgramCounter)
 	})
 }
+
+func TestOpcodeFx07(t *testing.T) {
+	emu := NewEmulator()
+	emu.DelayTimer = 10
+	emu.VRegisters[2] = 0
+	emu.Decode(0xF207)
+
+	assert.Equal(t, uint8(10), emu.VRegisters[2])
+}
+
+func TestOpcodeFx0A(t *testing.T) {
+	t.Run("no key is pressed", func(t *testing.T) {
+		emu := NewEmulator()
+		emu.ProgramCounter = 10
+		emu.Decode(0xF20A)
+
+		assert.Equal(t, uint16(8), emu.ProgramCounter)
+	})
+
+	t.Run("a key is pressed", func(t *testing.T) {
+		emu := NewEmulator()
+		emu.ProgramCounter = 10
+		emu.Keys[0xC] = 1
+		emu.Decode(0xF20A)
+
+		assert.Equal(t, uint16(10), emu.ProgramCounter)
+		assert.Equal(t, uint8(0xC), emu.VRegisters[2])
+	})
+}
+
+func TestOpcodeFx15(t *testing.T) {
+	emu := NewEmulator()
+	emu.DelayTimer = 0
+	emu.VRegisters[2] = 10
+	emu.Decode(0xF215)
+
+	assert.Equal(t, uint16(10), emu.DelayTimer)
+}
+
+func TestOpcodeFx18(t *testing.T) {
+	emu := NewEmulator()
+	emu.SoundTimer = 0
+	emu.VRegisters[2] = 10
+	emu.Decode(0xF218)
+
+	assert.Equal(t, uint16(10), emu.SoundTimer)
+}
+
+func TestOpcodeFx1E(t *testing.T) {
+	emu := NewEmulator()
+	emu.IRegister = 5
+	emu.VRegisters[2] = 10
+	emu.Decode(0xF21E)
+
+	assert.Equal(t, uint16(15), emu.IRegister)
+}
+
+func TestOpcodeFx29(t *testing.T) {
+	emu := NewEmulator()
+	emu.IRegister = 0
+	emu.VRegisters[2] = 0x4
+	emu.Decode(0xF229)
+
+	assert.Equal(t, uint16(20), emu.IRegister)
+}

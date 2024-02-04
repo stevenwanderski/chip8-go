@@ -292,5 +292,64 @@ func (d *Decoder) Run(opcode uint16) {
 			break
 		}
 
+	case 0xF000:
+		x := (opcode & 0x0F00) >> 8
+
+		switch opcode & 0x00FF {
+		case 0x07:
+			e.VRegisters[x] = uint8(e.DelayTimer)
+
+			break
+
+		case 0x0A:
+			pressed := false
+
+			for i, v := range e.Keys {
+				if v == 1 {
+					pressed = true
+					e.VRegisters[x] = uint8(i)
+				}
+			}
+
+			if !pressed {
+				e.ProgramCounter -= 2
+			}
+
+			break
+
+		case 0x15:
+			e.DelayTimer = uint16(e.VRegisters[x])
+
+			break
+
+		case 0x18:
+			e.SoundTimer = uint16(e.VRegisters[x])
+
+			break
+
+		case 0x1E:
+			e.IRegister += uint16(e.VRegisters[x])
+
+			break
+
+		case 0x29:
+			e.IRegister = uint16(e.VRegisters[x] * 5)
+
+			break
+
+		case 0x33:
+
+			break
+
+		case 0x55:
+
+			break
+
+		case 0x65:
+
+			break
+
+		}
+		break
 	}
 }

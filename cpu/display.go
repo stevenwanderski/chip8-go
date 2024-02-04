@@ -1,6 +1,8 @@
 package cpu
 
 import (
+	"fmt"
+
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -37,29 +39,9 @@ func (d *Display) Run(emulator Emulator) {
 
 	running := true
 	for running {
-		emulator.Cycle()
-
-		renderer.SetDrawColor(186, 177, 144, 255)
-		renderer.Clear()
-
-		for i, v := range emulator.Screen {
-			rect := sdl.Rect{
-				X: (int32(i) % int32(SCREEN_WIDTH)) * int32(SCREEN_SCALE),
-				Y: (int32(i) / int32(SCREEN_WIDTH)) * int32(SCREEN_SCALE),
-				W: int32(SCREEN_SCALE),
-				H: int32(SCREEN_SCALE),
-			}
-
-			if v == true {
-				renderer.SetDrawColor(108, 149, 117, 255)
-			} else {
-				renderer.SetDrawColor(186, 177, 144, 255)
-			}
-
-			renderer.FillRect(&rect)
-		}
-
-		renderer.Present()
+		emulator.Tick()
+		emulator.TickTimers()
+		emulator.DrawScreen(renderer)
 
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch t := event.(type) {
@@ -144,6 +126,7 @@ func (d *Display) Run(emulator Emulator) {
 			}
 		}
 
+		fmt.Println(emulator.Keys)
 		sdl.Delay(1000 / 60)
 	}
 }
