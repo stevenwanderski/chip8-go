@@ -271,5 +271,26 @@ func (d *Decoder) Run(opcode uint16) {
 
 		fmt.Printf("Opcode %x: Draw %d rows high at X: %d, Y: %d\n", opcode, n, e.VRegisters[x], e.VRegisters[y])
 		break
+
+	case 0xE000:
+		switch opcode & 0x00FF {
+		case 0x9E:
+			x := (opcode & 0x0F00) >> 8
+
+			if e.Keys[e.VRegisters[x]] == 1 {
+				e.ProgramCounter += 2
+			}
+			break
+
+		case 0xA1:
+			x := (opcode & 0x0F00) >> 8
+
+			if e.Keys[e.VRegisters[x]] == 0 {
+				e.ProgramCounter += 2
+			}
+
+			break
+		}
+
 	}
 }

@@ -331,3 +331,47 @@ func TestOpcodeDxyn(t *testing.T) {
 	emu.Decode(0xD123)
 	// TODO: hmmm
 }
+
+func TestOpcodeEx9E(t *testing.T) {
+	t.Run("Key is pressed", func(t *testing.T) {
+		emu := NewEmulator()
+		emu.ProgramCounter = 900
+		emu.VRegisters[1] = 0x3
+		emu.Keys[0x3] = 1
+		emu.Decode(0xE19E)
+
+		assert.Equal(t, uint16(902), emu.ProgramCounter)
+	})
+
+	t.Run("Key is not pressed", func(t *testing.T) {
+		emu := NewEmulator()
+		emu.ProgramCounter = 900
+		emu.VRegisters[1] = 0x3
+		emu.Keys[0x3] = 0
+		emu.Decode(0xE19E)
+
+		assert.Equal(t, uint16(900), emu.ProgramCounter)
+	})
+}
+
+func TestOpcodeEx1A(t *testing.T) {
+	t.Run("Key is not pressed", func(t *testing.T) {
+		emu := NewEmulator()
+		emu.ProgramCounter = 900
+		emu.VRegisters[1] = 0x3
+		emu.Keys[0x3] = 0
+		emu.Decode(0xE1A1)
+
+		assert.Equal(t, uint16(902), emu.ProgramCounter)
+	})
+
+	t.Run("Key is pressed", func(t *testing.T) {
+		emu := NewEmulator()
+		emu.ProgramCounter = 900
+		emu.VRegisters[1] = 0x3
+		emu.Keys[0x3] = 1
+		emu.Decode(0xE1A1)
+
+		assert.Equal(t, uint16(900), emu.ProgramCounter)
+	})
+}
