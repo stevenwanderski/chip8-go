@@ -39,7 +39,10 @@ func (d *Display) Run(emulator Emulator) {
 
 	running := true
 	for running {
-		emulator.Tick()
+		for i := 0; i < 10; i++ {
+			emulator.Tick()
+		}
+
 		emulator.TickTimers()
 		emulator.DrawScreen(renderer)
 

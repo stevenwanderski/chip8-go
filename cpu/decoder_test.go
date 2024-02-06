@@ -8,16 +8,18 @@ import (
 
 func TestOpcode00E0(t *testing.T) {
 	emu := NewEmulator()
-	emu.Screen[0] = true
-	emu.Screen[1] = true
+	emu.Screen[0] = 1
+	emu.Screen[1] = 1
 
 	emu.Decode(0x00E0)
 
-	got := false
-	want := false
+	got := uint8(0)
+	want := uint8(0)
 
 	for _, v := range emu.Screen {
-		got = got && v
+		if v == 1 {
+			got = 1
+		}
 	}
 
 	assert.Equal(t, want, got)
@@ -439,4 +441,46 @@ func TestOpcodeFx29(t *testing.T) {
 	emu.Decode(0xF229)
 
 	assert.Equal(t, uint16(20), emu.IRegister)
+}
+
+func TestOpcodeFx33(t *testing.T) {
+	emu := NewEmulator()
+	emu.IRegister = 999
+	emu.VRegisters[2] = 216
+	emu.Decode(0xF233)
+
+	assert.Equal(t, uint8(2), emu.Ram[999])
+	assert.Equal(t, uint8(1), emu.Ram[1000])
+	assert.Equal(t, uint8(6), emu.Ram[1001])
+}
+
+func TestOpcodeFx55(t *testing.T) {
+	emu := NewEmulator()
+	emu.IRegister = 999
+	emu.VRegisters[0] = 100
+	emu.VRegisters[1] = 200
+	emu.VRegisters[2] = 255
+	emu.Decode(0xF255)
+
+	assert.Equal(t, uint8(100), emu.Ram[999])
+	assert.Equal(t, uint8(200), emu.Ram[1000])
+	assert.Equal(t, uint8(255), emu.Ram[1001])
+}
+
+func TestOpcodeFx65(t *testing.T) {
+	emu := NewEmulator()
+	emu.IRegister = 999
+	emu.Ram[999] = 100
+	emu.Ram[1000] = 200
+	emu.Ram[1001] = 255
+	emu.Decode(0xF265)
+
+	assert.Equal(t, uint8(100), emu.VRegisters[0])
+	assert.Equal(t, uint8(200), emu.VRegisters[1])
+	assert.Equal(t, uint8(255), emu.VRegisters[2])
+}
+
+func TestOpcodeUnknown(t *testing.T) {
+	emu := NewEmulator()
+	emu.Decode(0xFFFF)
 }
