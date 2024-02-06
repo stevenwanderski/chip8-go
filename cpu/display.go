@@ -1,8 +1,6 @@
 package cpu
 
 import (
-	"fmt"
-
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -129,7 +127,6 @@ func (d *Display) Run(emulator Emulator) {
 			}
 		}
 
-		fmt.Println(emulator.Keys)
 		sdl.Delay(1000 / 60)
 	}
 }

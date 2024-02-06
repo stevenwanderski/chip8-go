@@ -129,13 +129,13 @@ func (d *Decoder) Run(opcode uint16) {
 
 			if e.VRegisters[y] > (255 - e.VRegisters[x]) {
 				e.VRegisters[0xF] = uint8(1)
+				fmt.Printf("Opcode %x: Set VRegister[F] to 1 because VRegister[%d] (%d) is greater than 255 - VRegister[%d] (%d)\n", opcode, y, e.VRegisters[y], x, e.VRegisters[x])
 			} else {
 				e.VRegisters[0xF] = uint8(0)
+				fmt.Printf("Opcode %x: Set VRegister[F] to 0 because VRegister[%d] (%d) is not greater than 255 - VRegister[%d] (%d)\n", opcode, y, e.VRegisters[y], x, e.VRegisters[x])
 			}
 
 			e.VRegisters[x] = e.VRegisters[x] + e.VRegisters[y]
-
-			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
 
 		case 5:
 			x := (opcode & 0x0F00) >> 8
@@ -237,15 +237,14 @@ func (d *Decoder) Run(opcode uint16) {
 			for j = 0; j < 8; j++ {
 				// If the bit equals 1
 				if pixels&(0b10000000>>j) != 0 {
-					x_position := uint16(e.VRegisters[x] + j)
-					y_position := uint16(e.VRegisters[y] + i)
+					x_position := uint16(e.VRegisters[x]+j) % SCREEN_WIDTH
+					y_position := uint16(e.VRegisters[y]+i) % SCREEN_HEIGHT
 
 					screen_index := (y_position * SCREEN_WIDTH) + x_position
 
-					// TODO: Collision detection?
-					// if screen_index == 1 {
-					// 	e.VRegisters[0xF] = 1
-					// }
+					if screen_index == 1 {
+						e.VRegisters[0xF] = 1
+					}
 
 					e.Screen[screen_index] ^= 1
 				}
