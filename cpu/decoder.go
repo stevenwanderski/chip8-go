@@ -20,12 +20,8 @@ func (d *Decoder) Run(opcode uint16) {
 				e.Screen[i] = 0
 			}
 
-			fmt.Printf("Opcode %x: Clear the screen\n", opcode)
-
 		case 0x00EE:
 			e.ProgramCounter = e.Pop()
-
-			fmt.Printf("Opcode %x: Set the ProgramCounter to stack address\n", opcode)
 
 		default:
 			fmt.Printf("Invalid opcode %X\n", opcode)
@@ -35,8 +31,6 @@ func (d *Decoder) Run(opcode uint16) {
 		nnn := opcode & 0x0FFF
 		e.ProgramCounter = nnn
 
-		// fmt.Printf("Opcode %x: Set ProgramCounter to %d\n", opcode, nnn)
-
 	case 0x2000:
 		oldValue := e.ProgramCounter
 		e.Push(oldValue)
@@ -44,17 +38,13 @@ func (d *Decoder) Run(opcode uint16) {
 		nnn := opcode & 0x0FFF
 		e.ProgramCounter = nnn
 
-		fmt.Printf("Opcode %x: Set ProgramCounter to %d and add %d to the stack \n", opcode, nnn, oldValue)
-
 	case 0x3000:
 		x := (opcode & 0x0F00) >> 8
 		nn := uint8(opcode & 0x00FF)
 
 		if e.VRegisters[x] == nn {
 			e.ProgramCounter += 2
-			// fmt.Printf("Opcode %x: Set ProgramCounter to %d\n", opcode, e.ProgramCounter)
 		} else {
-			// fmt.Printf("Opcode %x: Skip because VRegister[%d] (%d) does not equal nn (%d)\n", opcode, x, e.VRegisters[x], nn)
 		}
 
 	case 0x4000:
@@ -63,9 +53,7 @@ func (d *Decoder) Run(opcode uint16) {
 
 		if e.VRegisters[x] != nn {
 			e.ProgramCounter += 2
-			fmt.Printf("Opcode %x: Set ProgramCounter to %d\n", opcode, e.ProgramCounter)
 		} else {
-			fmt.Printf("Opcode %x: Skip because VRegister[%d] (%d) equals nn (%d)\n", opcode, x, e.VRegisters[x], nn)
 		}
 
 	case 0x5000:
@@ -74,9 +62,7 @@ func (d *Decoder) Run(opcode uint16) {
 
 		if e.VRegisters[x] == e.VRegisters[y] {
 			e.ProgramCounter += 2
-			fmt.Printf("Opcode %x: Set ProgramCounter to %d\n", opcode, e.ProgramCounter)
 		} else {
-			fmt.Printf("Opcode %x: Skip because VRegister[%d] (%d) does not equal VRegister[%d] (%d)\n", opcode, x, e.VRegisters[x], y, e.VRegisters[y])
 		}
 
 	case 0x6000:
@@ -84,14 +70,10 @@ func (d *Decoder) Run(opcode uint16) {
 		nn := opcode & 0x00FF
 		e.VRegisters[x] = uint8(nn)
 
-		fmt.Printf("Opcode %x: Set VRegister %d to %d\n", opcode, x, nn)
-
 	case 0x7000:
 		x := (opcode & 0x0F00) >> 8
 		nn := opcode & 0x00FF
 		e.VRegisters[x] += uint8(nn)
-
-		fmt.Printf("Opcode %x: Add %d to VRegister[%d] (%d)\n", opcode, nn, x, e.VRegisters[x])
 
 	case 0x8000:
 		switch opcode & 0x000F {
@@ -100,28 +82,20 @@ func (d *Decoder) Run(opcode uint16) {
 			y := (opcode & 0x00F0) >> 4
 			e.VRegisters[x] = e.VRegisters[y]
 
-			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d)\n", opcode, x, y, e.VRegisters[y])
-
 		case 1:
 			x := (opcode & 0x0F00) >> 8
 			y := (opcode & 0x00F0) >> 4
 			e.VRegisters[x] = e.VRegisters[x] | e.VRegisters[y]
-
-			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) OR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
 
 		case 2:
 			x := (opcode & 0x0F00) >> 8
 			y := (opcode & 0x00F0) >> 4
 			e.VRegisters[x] = e.VRegisters[x] & e.VRegisters[y]
 
-			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) AND VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
-
 		case 3:
 			x := (opcode & 0x0F00) >> 8
 			y := (opcode & 0x00F0) >> 4
 			e.VRegisters[x] = e.VRegisters[x] ^ e.VRegisters[y]
-
-			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
 
 		case 4:
 			x := (opcode & 0x0F00) >> 8
@@ -129,10 +103,8 @@ func (d *Decoder) Run(opcode uint16) {
 
 			if e.VRegisters[y] > (255 - e.VRegisters[x]) {
 				e.VRegisters[0xF] = uint8(1)
-				fmt.Printf("Opcode %x: Set VRegister[F] to 1 because VRegister[%d] (%d) is greater than 255 - VRegister[%d] (%d)\n", opcode, y, e.VRegisters[y], x, e.VRegisters[x])
 			} else {
 				e.VRegisters[0xF] = uint8(0)
-				fmt.Printf("Opcode %x: Set VRegister[F] to 0 because VRegister[%d] (%d) is not greater than 255 - VRegister[%d] (%d)\n", opcode, y, e.VRegisters[y], x, e.VRegisters[x])
 			}
 
 			e.VRegisters[x] = e.VRegisters[x] + e.VRegisters[y]
@@ -149,16 +121,12 @@ func (d *Decoder) Run(opcode uint16) {
 
 			e.VRegisters[x] = e.VRegisters[x] - e.VRegisters[y]
 
-			fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
-
 		case 6:
 			x := (opcode & 0x0F00) >> 8
 			v := e.VRegisters[x]
 
 			e.VRegisters[0xF] = v & 1
 			e.VRegisters[x] = v >> 1
-
-			// fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
 
 		case 7:
 			x := (opcode & 0x0F00) >> 8
@@ -172,16 +140,12 @@ func (d *Decoder) Run(opcode uint16) {
 				e.VRegisters[0xF] = 0
 			}
 
-			// fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
-
 		case 0xE:
 			x := (opcode & 0x0F00) >> 8
 			v := e.VRegisters[x]
 
 			e.VRegisters[0xF] = v >> 7 & 1
 			e.VRegisters[x] = v << 1
-
-			// fmt.Printf("Opcode %x: Set VRegister[%d] to VRegister[%d] (%d) XOR VRegister[%d] (%d)\n", opcode, x, x, e.VRegisters[x], y, e.VRegisters[y])
 
 		default:
 			fmt.Printf("Invalid opcode %X\n", opcode)
@@ -196,20 +160,14 @@ func (d *Decoder) Run(opcode uint16) {
 			e.ProgramCounter += 2
 		}
 
-		// fmt.Printf("Opcode %x: Set IRegister to %d\n", opcode, nnn)
-
 	case 0xA000:
 		nnn := opcode & 0x0FFF
 		e.IRegister = nnn
-
-		fmt.Printf("Opcode %x: Set IRegister to %d\n", opcode, nnn)
 
 	case 0xB000:
 		nnn := uint8(opcode & 0x0FFF)
 		v := e.VRegisters[0]
 		e.ProgramCounter += uint16(v + nnn)
-
-		// fmt.Printf("Opcode %x: Set IRegister to %d\n", opcode, nnn)
 
 	case 0xC000:
 		x := (opcode & 0x0F00) >> 8
@@ -252,8 +210,6 @@ func (d *Decoder) Run(opcode uint16) {
 				}
 			}
 		}
-
-		fmt.Printf("Opcode %x: Draw %d rows high at X: %d, Y: %d\n", opcode, n, e.VRegisters[x], e.VRegisters[y])
 
 	case 0xE000:
 		switch opcode & 0x00FF {
