@@ -90,7 +90,11 @@ func (e *Emulator) DrawScreen(renderer *sdl.Renderer) {
 }
 
 func (e *Emulator) LoadRom(filepath string) {
-	data, _ := os.ReadFile(filepath)
+	data, err := os.ReadFile(filepath)
+
+	if err != nil {
+		panic(err)
+	}
 
 	for i, v := range data {
 		e.Ram[uint16(i)+START_ADDRESS] = v
