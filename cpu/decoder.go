@@ -242,8 +242,10 @@ func (d *Decoder) Run(opcode uint16) {
 
 					screen_index := (y_position * SCREEN_WIDTH) + x_position
 
-					if screen_index == 1 {
+					if e.Screen[screen_index] == 1 {
 						e.VRegisters[0xF] = 1
+					} else {
+						e.VRegisters[0xF] = 0
 					}
 
 					e.Screen[screen_index] ^= 1
