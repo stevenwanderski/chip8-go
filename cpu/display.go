@@ -32,7 +32,7 @@ func (d *Display) Run(emulator Emulator) {
 	}
 	defer renderer.Destroy()
 
-	renderer.SetDrawColor(186, 177, 144, 255)
+	setBackgroundColor(renderer)
 	renderer.Clear()
 
 	running := true
@@ -131,8 +131,8 @@ func (d *Display) Run(emulator Emulator) {
 	}
 }
 
-func (d *Display) DrawScreen(renderer *sdl.Renderer, screen [2048]uint8) {
-	renderer.SetDrawColor(186, 177, 144, 255)
+func (d *Display) DrawScreen(renderer *sdl.Renderer, screen [SCREEN_TOTAL]uint8) {
+	setBackgroundColor(renderer)
 	renderer.Clear()
 
 	for i, v := range screen {
@@ -144,13 +144,21 @@ func (d *Display) DrawScreen(renderer *sdl.Renderer, screen [2048]uint8) {
 		}
 
 		if v == 1 {
-			renderer.SetDrawColor(108, 149, 117, 255)
+			setForegroundColor(renderer)
 		} else {
-			renderer.SetDrawColor(186, 177, 144, 255)
+			setBackgroundColor(renderer)
 		}
 
 		renderer.FillRect(&rect)
 	}
 
 	renderer.Present()
+}
+
+func setBackgroundColor(renderer *sdl.Renderer) {
+	renderer.SetDrawColor(0, 0, 0, 0)
+}
+
+func setForegroundColor(renderer *sdl.Renderer) {
+	renderer.SetDrawColor(15, 255, 80, 255)
 }

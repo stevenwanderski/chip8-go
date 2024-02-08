@@ -8,6 +8,7 @@ const (
 	RAM_SIZE       uint16 = 4096
 	SCREEN_WIDTH   uint16 = 64
 	SCREEN_HEIGHT  uint16 = 32
+	SCREEN_TOTAL   uint16 = SCREEN_WIDTH * SCREEN_HEIGHT
 	SCREEN_SCALE   uint16 = 15
 	REGISTER_COUNT uint8  = 16
 	STACK_SIZE     uint8  = 16
@@ -36,7 +37,7 @@ var fontSet = []uint8{
 type Emulator struct {
 	ProgramCounter uint16
 	Ram            [RAM_SIZE]byte
-	Screen         [SCREEN_WIDTH * SCREEN_HEIGHT]uint8
+	Screen         [SCREEN_TOTAL]uint8
 	VRegisters     [REGISTER_COUNT]uint8
 	IRegister      uint16
 	Stack          [STACK_SIZE]uint16
