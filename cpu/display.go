@@ -42,7 +42,7 @@ func (d *Display) Run(emulator Emulator) {
 		}
 
 		emulator.TickTimers()
-		emulator.DrawScreen(renderer)
+		d.DrawScreen(renderer, emulator.Screen)
 
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
 			switch t := event.(type) {
@@ -129,4 +129,28 @@ func (d *Display) Run(emulator Emulator) {
 
 		sdl.Delay(1000 / 60)
 	}
+}
+
+func (d *Display) DrawScreen(renderer *sdl.Renderer, screen [2048]uint8) {
+	renderer.SetDrawColor(186, 177, 144, 255)
+	renderer.Clear()
+
+	for i, v := range screen {
+		rect := sdl.Rect{
+			X: (int32(i) % int32(SCREEN_WIDTH)) * int32(SCREEN_SCALE),
+			Y: (int32(i) / int32(SCREEN_WIDTH)) * int32(SCREEN_SCALE),
+			W: int32(SCREEN_SCALE),
+			H: int32(SCREEN_SCALE),
+		}
+
+		if v == 1 {
+			renderer.SetDrawColor(108, 149, 117, 255)
+		} else {
+			renderer.SetDrawColor(186, 177, 144, 255)
+		}
+
+		renderer.FillRect(&rect)
+	}
+
+	renderer.Present()
 }

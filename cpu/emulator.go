@@ -2,8 +2,6 @@ package cpu
 
 import (
 	"os"
-
-	"github.com/veandco/go-sdl2/sdl"
 )
 
 const (
@@ -63,30 +61,6 @@ func (e *Emulator) TickTimers() {
 		// Check if 1, then make a beep
 		e.SoundTimer -= 1
 	}
-}
-
-func (e *Emulator) DrawScreen(renderer *sdl.Renderer) {
-	renderer.SetDrawColor(186, 177, 144, 255)
-	renderer.Clear()
-
-	for i, v := range e.Screen {
-		rect := sdl.Rect{
-			X: (int32(i) % int32(SCREEN_WIDTH)) * int32(SCREEN_SCALE),
-			Y: (int32(i) / int32(SCREEN_WIDTH)) * int32(SCREEN_SCALE),
-			W: int32(SCREEN_SCALE),
-			H: int32(SCREEN_SCALE),
-		}
-
-		if v == 1 {
-			renderer.SetDrawColor(108, 149, 117, 255)
-		} else {
-			renderer.SetDrawColor(186, 177, 144, 255)
-		}
-
-		renderer.FillRect(&rect)
-	}
-
-	renderer.Present()
 }
 
 func (e *Emulator) LoadRom(filepath string) {
