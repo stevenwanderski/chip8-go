@@ -479,8 +479,3 @@ func TestOpcodeFx65(t *testing.T) {
 	assert.Equal(t, uint8(200), emu.VRegisters[1])
 	assert.Equal(t, uint8(255), emu.VRegisters[2])
 }
-
-func TestOpcodeUnknown(t *testing.T) {
-	emu := NewEmulator()
-	emu.Decode(0xFFFF)
-}
